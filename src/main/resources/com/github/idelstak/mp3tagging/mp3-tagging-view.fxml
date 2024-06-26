@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+
+<StackPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.github.idelstak.mp3tagging.Mp3TaggingController">
+   <children>
+      <BorderPane fx:id="viewPane">
+          <center>
+              <SplitPane fx:id="splitPane" />
+          </center>
+          <top>
+              <ToolBar BorderPane.alignment="CENTER">
+                  <items>
+                      <Button onAction="#selectDirectory">
+                          <graphic>
+                              <FontIcon style="-fx-icon-code: bx-folder-plus; -fx-icon-size: 24px;" />
+                          </graphic>
+                      </Button>
+                      <Button fx:id="downloadTagsButton" mnemonicParsing="false" onAction="#downloadTagInfo">
+                          <graphic>
+                              <FontIcon style="-fx-icon-code: bx-cloud-download; -fx-icon-size: 24px;" />
+                          </graphic>
+                      </Button>
+                  </items>
+              </ToolBar>
+          </top>
+      </BorderPane>
+      <Hyperlink fx:id="viewPlaceholder" alignment="CENTER" contentDisplay="TOP" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#selectDirectory" text="Add some Mp3 files to start tagging!">
+         <graphic>
+            <FontIcon style="-fx-icon-code: bx-music; -fx-icon-size: 128px;" />
+         </graphic>
+      </Hyperlink>
+   </children>
+</StackPane>

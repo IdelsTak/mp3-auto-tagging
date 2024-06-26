@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ListView?>
+
+
+<ListView fx:id="mp3sListView" minWidth="-Infinity" prefHeight="600.0" prefWidth="250.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.github.idelstak.mp3tagging.Mp3sViewController" />

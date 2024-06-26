@@ -1,0 +1,15 @@
+.dialog-pane > .expandable-content:error {
+    -fx-padding: 2px 12px 6px 12px;
+    -fx-pref-width: 200;
+    -fx-min-width: 200;
+    -fx-wrap: true;
+    -fx-min-height: 100;
+    -fx-pref-height: 100;
+    -fx-max-height: 'Infinity';
+    -fx-font-weight: bold;
+    -fx-text-fill: red;
+    -fx-alignment: top-left
+}
+.bold {
+    -fx-font-weight: bold
+}
