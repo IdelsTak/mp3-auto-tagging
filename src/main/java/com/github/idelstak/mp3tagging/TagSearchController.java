@@ -211,7 +211,6 @@ public class TagSearchController extends FxmlController {
 
                 runLater(() -> {
                     tagDetails.setAll(tagDs);
-
                     resultsListView.getSelectionModel().selectFirst();
                 });
             });
