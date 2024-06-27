@@ -11,6 +11,7 @@ import org.slf4j.*;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 import static javafx.application.Platform.*;
 
@@ -70,6 +71,8 @@ public class TagSearchController extends FxmlController {
                 trackTitleLabel.setText(detail.title());
                 artistLabel.setText(detail.artistName());
                 albumLabel.setText(detail.album());
+                yearLabel.setText(detail.releaseDate());
+                genreLabel.setText(detail.genres());
             });
         });
         resultsListView.setItems(tagDetails);
@@ -104,7 +107,7 @@ public class TagSearchController extends FxmlController {
                             URI uri = new URI("https",
                                               "musicbrainz.org",
                                               "/ws/2/recording",
-                                              "query=" + query + "&fmt=json",
+                                              "query=" + query + "&limit=100&fmt=json",
                                               null);
                             return uri.toURL();
                         }
@@ -121,37 +124,95 @@ public class TagSearchController extends FxmlController {
             searchService.setOnSucceeded(event -> {
                 JSONObject result = (JSONObject) event.getSource().getValue();
                 JSONArray recordings = result.getJSONArray("recordings");
+                List<TagDetail> tagDs = new ArrayList<>();
 
-                runLater(() -> {
-                    tagDetails.clear();
+                if (recordings.isEmpty()) {
+                    System.out.println("No recordings found.");
+                } else {
+                    for (int i = 0; i < recordings.length(); i++) {
+                        System.out.println("recording #" + i + "====================");
+                        JSONObject recording = recordings.getJSONObject(i);
 
-                    if (!recordings.isEmpty()) {
-                        for (int i = 0; i < recordings.length(); i++) {
-                            JSONObject recording = recordings.getJSONObject(i);
-                            String title = recording.getString("title");
-                            JSONArray releases = recording.getJSONArray("releases");
-                            JSONObject firstRelease = releases.getJSONObject(0);
-                            String album = "";
-                            if (firstRelease != null) {
-                                album = firstRelease.getString("title");
+                        String recordingId = recording.getString("id");
+                        System.out.println("recordingId = " + recordingId);
+
+                        String recordingTitle = recording.getString("title");
+                        System.out.println("recordingTitle = " + recordingTitle);
+
+                        String releaseDate = "";
+                        try {
+                            releaseDate = recording.getString("first-release-date");
+                        } catch (JSONException e) {
+                            LOG.debug("", e);
+                        }
+                        System.out.println("releaseDate = " + releaseDate);
+
+                        JSONArray artistCredits = recording.getJSONArray("artist-credit");
+                        StringJoiner artistNames = new StringJoiner(", ");
+                        if (!artistCredits.isEmpty()) {
+                            for (int j = 0; j < artistCredits.length(); j++) {
+                                JSONObject artistCredit = artistCredits.getJSONObject(j);
+                                String artistCreditName = artistCredit.getString("name");
+                                System.out.println("artistCreditName = " + artistCreditName);
+
+                                JSONObject artist = artistCredit.getJSONObject("artist");
+                                String artistName = artist.getString("name");
+                                artistName = (artistName == null || artistName.isBlank())
+                                             ? artistCreditName
+                                             : artistName;
+                                artistNames.add(artistName);
+                                System.out.printf("artistName #%d = %s%n", j, artistName);
                             }
-                            JSONArray firstArtist = recording.getJSONArray("artist-credit");
-                            String artistName = "";
-                            if (firstArtist != null) {
-                                artistName = firstArtist.getJSONObject(0).getJSONObject("artist").getString("name");
-                            }
-
-                            System.out.println("Track Title: " + title);
-                            System.out.println("Album: " + album);
-                            System.out.println("Artist: " + artistName);
-
-                            tagDetails.add(new TagDetail(title, album, artistName));
                         }
 
-                        resultsListView.getSelectionModel().selectFirst();
-                    } else {
-                        System.out.println("No recordings found.");
+                        JSONArray releases = null;
+                        try {
+                            releases = recording.getJSONArray("releases");
+                        } catch (JSONException e) {
+                            LOG.debug("", e);
+                        }
+                        String album = "";
+                        if (releases != null && !releases.isEmpty()) {
+                            JSONObject firstRelease = releases.getJSONObject(0);
+                            String mbid = firstRelease.getString("id");
+                            System.out.println("mbid = " + mbid);
+
+                            String coverArtUrl = "http://coverartarchive.org/release/" + mbid;
+                            System.out.println("coverArtUrl = " + coverArtUrl);
+
+                            album = firstRelease.getString("title");
+                            System.out.println("album = " + album);
+                        }
+
+                        JSONArray genres = null;
+                        try {
+                            genres = recording.getJSONArray("tags");
+                        } catch (JSONException e) {
+                            LOG.debug("Tags section not found", e);
+                        }
+
+                        StringJoiner genreTags = new StringJoiner(", ");
+                        if (genres != null && genres.isEmpty()) {
+                            for (int j = 0; j < genres.length(); j++) {
+                                JSONObject genre = genres.getJSONObject(j);
+                                String genreName = genre.getString("name");
+                                System.out.println("genreName = " + genreName);
+                                genreTags.add(genreName);
+                            }
+                        }
+
+                        tagDs.add(new TagDetail(recordingTitle,
+                                                album,
+                                                artistNames.toString(),
+                                                releaseDate,
+                                                genreTags.toString()));
                     }
+                }
+
+                runLater(() -> {
+                    tagDetails.setAll(tagDs);
+
+                    resultsListView.getSelectionModel().selectFirst();
                 });
             });
 
